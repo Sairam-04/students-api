@@ -8,6 +8,7 @@ import (
 	"log/slog"
 	"net/http"
 	"strconv"
+	"strings"
 
 	"github.com/Sairam-04/students-api/internal/storage"
 	"github.com/Sairam-04/students-api/internal/types"
@@ -84,5 +85,54 @@ func GetList(storage storage.Storage) http.HandlerFunc {
 			return
 		}
 		response.WriteJson(w, http.StatusOK, students)
+	}
+}
+
+func UpdateStudent(storage storage.Storage) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		id := r.PathValue("id")
+		slog.Info("updating a student", slog.String("id", id))
+		intId, err := strconv.ParseInt(id, 10, 64)
+		if err != nil {
+			response.WriteJson(w, http.StatusBadRequest, response.GeneralError(err))
+			return
+		}
+		var updatedStudent types.Student
+		err = json.NewDecoder(r.Body).Decode(&updatedStudent)
+		if err != nil {
+			response.WriteJson(w, http.StatusBadRequest, response.GeneralError(err))
+			return
+		}
+
+		student, err := storage.UpdateStudentByID(intId, updatedStudent)
+		if err != nil {
+			slog.Error("error updating user", slog.String("id", id))
+			response.WriteJson(w, http.StatusInternalServerError, response.GeneralError(err))
+			return
+		}
+
+		response.WriteJson(w, http.StatusOK, student)
+	}
+}
+
+func DeleteStudent(storage storage.Storage) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		id := r.PathValue("id")
+		slog.Info("deleting student", slog.String("id", id))
+		intID, err := strconv.ParseInt(id, 10, 64)
+		if err != nil {
+			response.WriteJson(w, http.StatusBadRequest, response.GeneralError(err))
+			return
+		}
+		err = storage.DeleteByID(intID)
+		if err != nil {
+			if strings.Contains(err.Error(), "no student found") {
+				response.WriteJson(w, http.StatusNotFound, response.GeneralError(err))
+				return
+			}
+			response.WriteJson(w, http.StatusInternalServerError, response.GeneralError(err))
+			return
+		}
+		response.WriteJson(w, http.StatusOK, map[string]string{"message": fmt.Sprintf("successfully deleted student with id: %d", intID)})
 	}
 }
