@@ -12,7 +12,8 @@ import (
 
 	"github.com/Sairam-04/students-api/internal/config"
 	"github.com/Sairam-04/students-api/internal/http/handlers/student"
-	"github.com/Sairam-04/students-api/internal/storage/sqlite"
+	"github.com/Sairam-04/students-api/internal/storage/postgres"
+	_ "github.com/Sairam-04/students-api/internal/storage/sqlite"
 )
 
 func main() {
@@ -20,7 +21,7 @@ func main() {
 	cfg := config.MustLoad()
 
 	// database setup
-	storage, err := sqlite.New(cfg)
+	storage, err := postgres.New(cfg)
 	if err != nil {
 		log.Fatal(err)
 	}

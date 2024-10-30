@@ -12,10 +12,19 @@ type HTTPServer struct {
 	Addr string `yaml:"address" env-required:"true"`
 }
 
+type DBConfig struct {
+	DBHost     string `yaml:"db_host" env-required:"true"`
+	DBPort     string `yaml:"db_port" env-required:"true"`
+	DBUser     string `yaml:"db_user" env-required:"true"`
+	DBPassword string `yaml:"db_pass" env-required:"true"`
+	DBName     string `yaml:"db_name" env-required:"true"`
+}
+
 type Config struct {
 	Env         string `yaml:"env" env:"Env" env-required:"true" env-default:"production"`
 	StoragePath string `yaml:"storage_path" env-required:"true"`
 	HTTPServer  `yaml:"http_server"`
+	DBConfig    `yaml:"db_config"`
 }
 
 func MustLoad() *Config {
